@@ -1,3 +1,5 @@
+
+
 import java.awt.image.BufferedImage;
 import java.io.File;
 
@@ -23,7 +25,6 @@ public class HealthBar {
 		if (image2 == null)
 			image2.createGraphics();
 		image = image1;
-		
 	}
 	
 	public BufferedImage getImage(){

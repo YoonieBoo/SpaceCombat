@@ -1,3 +1,5 @@
+
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -9,7 +11,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import sun.audio.*;
+import javax.sound.sampled.*;
 import java.io.*;
 import java.lang.*;
 import javax.sound.sampled.Clip;
@@ -52,6 +54,9 @@ public class GamePanel extends JPanel implements Runnable {
 	int countEnemy = numberOfEnemies + numberOfStationaryEnemies;
 	double timeForBullet = 0.005;
 	int seconds = 90;
+    private int highScore;  // To store the high score
+    private int currentScore = 0;  // To track current score
+    private int remainingHearts1 = 3;
 	
 	
 	Player player;
@@ -60,6 +65,7 @@ public class GamePanel extends JPanel implements Runnable {
 	Bullet[] bullets;
 	Bullet[] enemyBullets;
 	Enemy[] stationaryEnemy;
+	LocalStorage localStorage = new LocalStorage("data.properties");
 
 	public GamePanel() {
 		setSize(1080, 660);
@@ -70,6 +76,7 @@ public class GamePanel extends JPanel implements Runnable {
 		frame.setLocationRelativeTo(null);
 		setBackground(Color.BLACK);
 		frame.add(this);
+		this.highScore = loadHighScore();
 		File background = new File("background2.jpg");
 		try {
 			backGround = (ImageIO.read(background))
@@ -77,6 +84,7 @@ public class GamePanel extends JPanel implements Runnable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
 
 		File opacityF = new File("opacity.png");
 		try {
@@ -87,6 +95,57 @@ public class GamePanel extends JPanel implements Runnable {
 		frame.setVisible(true);
 	}
 
+	  private int loadHighScore() {
+	        int score = 0;
+	        try {
+	            File file = new File("highscore.txt");
+	            if (file.exists()) {
+	                BufferedReader reader = new BufferedReader(new FileReader(file));
+	                score = Integer.parseInt(reader.readLine());
+	                reader.close();
+	            }
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+	        return score;
+	    }
+
+	    // Method to save high score to file
+	    private void saveHighScore(int newHighScore) {
+	        try {
+	            BufferedWriter writer = new BufferedWriter(new FileWriter("highscore.txt"));
+	            writer.write(String.valueOf(newHighScore));
+	            writer.close();
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+	    }
+
+	    // Method to update the player's score and check if they surpassed the high score
+	    public void updateScore(int score) {
+	        currentScore = score;  // Update the current score
+	        if (currentScore > highScore) {
+	            System.out.println("New High Score! Extra Life Gained.");
+	            highScore = currentScore;
+	            saveHighScore(highScore);  // Save the new high score
+	            gainExtraLife();  // Grant extra life
+	        }
+	    }
+
+	    // Method to grant an extra life
+	    private void gainExtraLife() {
+	        remainingHearts++;
+	        System.out.println("Extra life gained! Total Lives: " + remainingHearts);
+	    }
+
+	    // Call this method whenever the player gains points
+	    public void incrementScore() {
+	        currentScore += 10;  // Example increment (change based on your scoring system)
+	        updateScore(currentScore);  // Check and update the score
+	    }
+
+	    
+	
 	public void init() {
 		keys = new KeyDetector(this);
 		mouse = new MouseDetector(this);
@@ -203,7 +262,7 @@ public class GamePanel extends JPanel implements Runnable {
 				}
 
 			} else if (resultPanel) {
-				result.draw(g2d);
+				result.draw(g2d,currentScore);
 			}
 		}
 
@@ -211,7 +270,7 @@ public class GamePanel extends JPanel implements Runnable {
 
 	public static void main(String[] args) {
 		new Thread(new GamePanel()).start();
-		backgroundsound();
+		backgroundSound();
                  
 	}
 
@@ -330,6 +389,7 @@ public class GamePanel extends JPanel implements Runnable {
 									enemy[v].isAlive = false;
 									countEnemy--;
 									bullets[i].fired = false;
+									incrementScore();
 								}
 							}
 						}
@@ -340,6 +400,7 @@ public class GamePanel extends JPanel implements Runnable {
 									stationaryEnemy[v].isAlive = false;
 									countEnemy--;
 									bullets[i].fired = false;
+									incrementScore();
 								}
 							}
 						}
@@ -383,14 +444,31 @@ public class GamePanel extends JPanel implements Runnable {
 						addEnemyBullet(stationaryEnemy[rand]);
 					}
 				}
+				int previousScore = localStorage.loadData("Score");
 
 				if (remainingHearts == 0) {
 					result.won = false;
 					play = false;
 					gameOver = true;
 					resultPanel = true;
+				
+		            
+		            if (currentScore > previousScore) {
+		                localStorage.saveData("Score", currentScore);
+		                System.out.println("New high score saved: " + currentScore);
+		            } else {
+		                System.out.println("No new high score.");
+		            }
 				}
 				if (countEnemy == 0) {
+				
+		            
+		            if (currentScore > previousScore) {
+		                localStorage.saveData("Score", currentScore);
+		                System.out.println("New high score saved: " + currentScore);
+		            } else {
+		                System.out.println("No new high score.");
+		            }
 					result.won = true;
 					play = false;
 					gameOver = true;
@@ -442,12 +520,20 @@ public class GamePanel extends JPanel implements Runnable {
 			if (menuPanel.clicked
 					&& menuPanel.rectangle[4].contains(mouse.pClicked)) {
 				menuPanel.clicked = false;
-				numberOfEnemies = 3;
+				numberOfEnemies = 5;
 				numberOfHearts = 3;
 				remainingHearts = 2;
 				numberOfStationaryEnemies = 1;
 				seconds = 90;
 				countEnemy = numberOfEnemies + numberOfStationaryEnemies;
+				//here
+				File background = new File("background2.jpg");
+				try {
+					backGround = (ImageIO.read(background))
+							.getSubimage(0, 0, 1080, 660);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 				reset();
 				mainPanel = false;
 				play = true;
@@ -456,7 +542,7 @@ public class GamePanel extends JPanel implements Runnable {
 			if (menuPanel.clicked
 					&& menuPanel.rectangle[5].contains(mouse.pClicked)) {
 				menuPanel.clicked = false;
-				numberOfEnemies = 4;
+				numberOfEnemies = 6;
 				numberOfHearts = 2;
 				remainingHearts = 2;
 				numberOfStationaryEnemies = 2;
@@ -466,11 +552,18 @@ public class GamePanel extends JPanel implements Runnable {
 				mainPanel = false;
 				play = true;
 				gameOver = false;
+				File background = new File("background1.jpg");
+				try {
+					backGround = (ImageIO.read(background))
+							.getSubimage(0, 0, 1080, 660);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 			if (menuPanel.clicked
 					&& menuPanel.rectangle[6].contains(mouse.pClicked)) {
 				menuPanel.clicked = false;
-				numberOfEnemies = 5;
+				numberOfEnemies = 7;
 				numberOfHearts = 1;
 				remainingHearts = 1;
 				numberOfStationaryEnemies = 3;
@@ -480,6 +573,13 @@ public class GamePanel extends JPanel implements Runnable {
 				mainPanel = false;
 				play = true;
 				gameOver = false;
+				File background = new File("background.jpg");
+				try {
+					backGround = (ImageIO.read(background))
+							.getSubimage(0, 0, 1920, 1080);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 			repaint();
 			sleep(60);
@@ -511,7 +611,7 @@ public class GamePanel extends JPanel implements Runnable {
 
 			repaint();
 			sleep(60);
-			result.painted = true;
+			//result.painted = true;
 
 		}
 	}
@@ -542,24 +642,28 @@ public class GamePanel extends JPanel implements Runnable {
 
 
 //background audio
-public static void backgroundsound(){
-AudioPlayer ap =AudioPlayer.player;
 
+	public static void backgroundSound() {
+        try {
+            // Load the audio file
+            File soundFile = new File("Game1.wav");
+            AudioInputStream audioStream = AudioSystem.getAudioInputStream(soundFile);
 
-AudioStream as;
-AudioData ad;
-ContinuousAudioDataStream loop =null;
+            // Get a sound clip resource
+            Clip clip = AudioSystem.getClip();
 
-try{
-as=new AudioStream(new FileInputStream("Game1.wav"));
-ad=as.getData();
-loop=new ContinuousAudioDataStream(ad);
+            // Open the audio clip and load samples from the audio input stream
+            clip.open(audioStream);
 
+            // Start playing the clip
+            clip.start();
+
+            // Optionally, loop the clip indefinitely
+            clip.loop(Clip.LOOP_CONTINUOUSLY);
+
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+            e.printStackTrace();
+        }
+	}
 }
-catch(IOException e){
-System.out.println(e);
-}
-
-ap.start(loop);
-}
-}
+  

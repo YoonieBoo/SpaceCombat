@@ -1,3 +1,5 @@
+
+
 import java.awt.BorderLayout;
 
 import java.awt.FlowLayout;
@@ -33,7 +35,7 @@ JPanel panel2 = new JPanel(new FlowLayout());
 
 JPanel panel3 = new JPanel(new FlowLayout());
 
-ImageIcon imageIcon = new ImageIcon("about.png");
+ImageIcon imageIcon = new ImageIcon("Assests/about.png");
 	
 JLabel label = new JLabel();
 	
@@ -50,7 +52,7 @@ setSize(450,320);
 setLocationRelativeTo(null);
 		
 setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		text.setText("This is a Space Shooter Game"+"\n\n"+"Developed in JAVA"+"\n\n"+"By Champions.INK"+"\n\n"+"XYZ");
+		text.setText("This is a Space Shooter Game"+"\n\n"+"Developed in JAVA"+"\n\n"+"By Yunn Yamone Aung & Kaung Zaw Hein"+"\n\n");
 		
 text.setEditable(false);
 		

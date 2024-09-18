@@ -1,3 +1,5 @@
+
+
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -18,7 +20,7 @@ public class HelpWindow extends JFrame implements ActionListener{
 	JPanel panel1 = new JPanel(new FlowLayout());
 	JPanel panel2 = new JPanel(new FlowLayout());
 	JPanel panel3 = new JPanel(new FlowLayout());
-	ImageIcon imageIcon = new ImageIcon("help.png");
+	ImageIcon imageIcon = new ImageIcon("Assests/help.png");
 	JLabel label = new JLabel();
 	
 	public HelpWindow(){
