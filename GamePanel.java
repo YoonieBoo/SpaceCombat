@@ -51,6 +51,7 @@ public class GamePanel extends JPanel implements Runnable {
 	int numberOfStationaryEnemies = 3;
 	int numberOfEnemyBullets = 15;
 	int numberOfBullets = 25;
+	int powerup_count = 1;
 	int countEnemy = numberOfEnemies + numberOfStationaryEnemies;
 	double timeForBullet = 0.005;
 	int seconds = 90;
@@ -62,6 +63,7 @@ public class GamePanel extends JPanel implements Runnable {
 	Player player;
 	HealthBar[] hearts;
 	Enemy[] enemy;
+	PowerUp powerup;
 	Bullet[] bullets;
 	Bullet[] enemyBullets;
 	Enemy[] stationaryEnemy;
@@ -167,6 +169,8 @@ public class GamePanel extends JPanel implements Runnable {
 			hearts[i] = new HealthBar();
 			hearts[i].x = 40 * i;
 		}
+		
+		powerup = new PowerUp();
 
 		enemy = new Enemy[numberOfEnemies];
 		for (int i = 0; i < numberOfEnemies; i++) {
@@ -214,6 +218,11 @@ public class GamePanel extends JPanel implements Runnable {
 				menuPanel.draw(g2d);
 			} else if (!gameOver) {
 				g2d.drawImage(backGround, 0, 0, null); // BackGround
+				
+				if (powerup_count == 1) {
+					g2d.drawImage(powerup.getImage(),powerup.x, powerup.y , null);
+				}
+				
 
 				for (int i = 0; i < numberOfHearts; i++)
 					g2d.drawImage(hearts[i].getImage(), hearts[i].x, 620, null);
@@ -379,6 +388,18 @@ public class GamePanel extends JPanel implements Runnable {
 						hearts[--remainingHearts].setImage();
 					}
 				}
+				
+				
+				if (powerup.isAlive
+						&& remainingHearts != 0
+						&& powerup.getBounds().intersects(
+								player.getBounds())) {
+					powerup.isAlive = false;
+					if (powerup_count > 0) {
+						powerup_count -= 1;
+					}
+					addBullet(2);
+				} 
 
 				for (int i = 0; i < numberOfBullets; i++) {
 					if (bullets[i].fired) {
@@ -524,6 +545,7 @@ public class GamePanel extends JPanel implements Runnable {
 				numberOfHearts = 3;
 				remainingHearts = 2;
 				numberOfStationaryEnemies = 1;
+				powerup_count = 1;
 				seconds = 90;
 				countEnemy = numberOfEnemies + numberOfStationaryEnemies;
 				//here
@@ -544,6 +566,7 @@ public class GamePanel extends JPanel implements Runnable {
 				menuPanel.clicked = false;
 				numberOfEnemies = 6;
 				numberOfHearts = 2;
+				powerup_count = 1;
 				remainingHearts = 2;
 				numberOfStationaryEnemies = 2;
 				seconds = 70;
@@ -567,6 +590,7 @@ public class GamePanel extends JPanel implements Runnable {
 				numberOfHearts = 1;
 				remainingHearts = 1;
 				numberOfStationaryEnemies = 3;
+				powerup_count = 1;
 				seconds = 60;
 				countEnemy = numberOfEnemies + numberOfStationaryEnemies;
 				reset();
@@ -617,7 +641,9 @@ public class GamePanel extends JPanel implements Runnable {
 	}
 
 	public void reset() {
-
+		powerup.setLocation();
+		powerup.isAlive = true;
+		
 		for (int i = 0; i < numberOfHearts; i++) {
 			hearts[i].setHealth();
 		}

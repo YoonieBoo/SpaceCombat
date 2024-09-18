@@ -53,8 +53,8 @@ public class MouseDetector extends MouseAdapter implements MouseMotionListener {
                 game.addBullet(1);
                 bulletSound();
             }
-            if (SwingUtilities.isRightMouseButton(e))
-                game.addBullet(2);
+//            if (SwingUtilities.isRightMouseButton(e))
+//                game.addBullet(2);
         }
     }
 
